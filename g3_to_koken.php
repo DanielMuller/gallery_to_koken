@@ -88,7 +88,9 @@ function get_content($parent=0, $order_by=null, $captured=null) {
             $captured = $row['captured'];
             if ($captured == "") $captured = $row['created'];
             $item['items']=get_content($row['id'],$child_order,$captured);
-            $item['upload_date'] = get_creation($item['items']);
+            if (is_array($item['items'])) {
+                $item['upload_date'] = get_creation($item['items']);
+            }
             $items[]=$item;
         }
         else {
@@ -198,8 +200,10 @@ function rebuild_tree($content,$left) {
         if ($content['items'][$last]['type']=="photo") {
             $content['items']=Array();
         }
-        foreach($content['items'] as $val) {
-            $right = rebuild_tree($val,$right);
+        if (is_array($content['items'])) {
+            foreach($content['items'] as $val) {
+                $right = rebuild_tree($val,$right);
+            }
         }
         $query = "update ".KOKEN_PREFIX."albums set left_id=".$left.",right_id=".$right." where id='".$content['id']."'";
         fwrite($sqlfp,$query.";\n");
@@ -212,58 +216,60 @@ function create_sql($mysqli,$content,$parent=null) {
     global $sqlfp,$shfp,$mapfp;
     $order = 1;
 
-    foreach ($content as $val) {
-        if ($val['type']=="album") {
-            print $val['title']." (".$val['id'].")\n";
-            $title = $mysqli->real_escape_string($val['title']);
-            $slug = $mysqli->real_escape_string($val['slug']);
-            $summary = $mysqli->real_escape_string($val['description']);
-            $internal_id = md5($slug);
-            $created_at = $val['upload_date'];
-            $level = $val['level'];
-            $last=sizeof($val['items'])-1;
-            if ($val['items'][$last]['type']=="photo") $album_type = 0;
-            else $album_type = 2;
-            $query = "INSERT into ".KOKEN_PREFIX."albums (id,title,slug,summary,description,level,album_type,published_on,created_on,modified_on,internal_id,total_count) values (".$val['id'].",'".$title."','".$slug."','".$summary."','".$summary."', ".$level.", ".$album_type.",".$created_at.",".$created_at.", ".time().", '".$internal_id."',".sizeof($val['items']).")";
-            fwrite($sqlfp,utf8_decode($query).";\n");
-            $folder = ($album_type == 2) ? "sets" : "albums";
-            fwrite($mapfp,urlencode(utf8_decode($val['source']))." "."http://".KOKEN_URL."/".$folder."/".$val['slug']."\n");
-            create_sql($mysqli,$val['items'],$val);
-        }
-        if ($val['type']=="photo") {
-            $pathinfo = pathinfo($val['image_file']);
-            $filename = $mysqli->real_escape_string($pathinfo['basename']);
-            $caption = $mysqli->real_escape_string($val['caption']);
-            $filesize = filesize($val['image_file']);
-            $slug = $mysqli->real_escape_string($parent['slug']."-".$val['slug']);
-            $internal_id = md5($slug);
-            $capture_date = $val['capture_date'];
-            if ($capture_date == "") $capture_date = "NULL";
-
-            print $filename."\n";
-
-            $query = "INSERT into ".KOKEN_PREFIX."content ";
-            $query.=" (id,slug,filename,caption,visibility,filesize,width,height,aspect_ratio,published_on,uploaded_on,captured_on,modified_on,internal_id,exif,exif_make,exif_model,exif_iso,exif_camera_serial,exif_camera_lens)";
-            $query.=" values";
-            $query.=" (".$val['id'].",'".$slug."','".$filename."','".$caption."',".$val['visibility'].",".$filesize.",'".$val['width']."','".$val['height']."','".$val['aspect_ratio']."',".$val['upload_date'].",".$val['upload_date'].",".$capture_date.",".$val['upload_date'].",'".$internal_id."'";
-            $query.=($val['exif_string']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_string'])."'";
-            $query.=($val['exif_make']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_make'])."'";
-            $query.=($val['exif_model']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_model'])."'";
-            $query.=($val['exif_iso']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_iso'])."'";
-            $query.=($val['exif_camera_serial']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_camera_serial'])."'";
-            $query.=($val['exif_camera_lens']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_camera_lens'])."'";
-            $query.=")";
-            fwrite($sqlfp,utf8_decode($query).";\n");
-            $newfile = KOKEN_PATH."/storage/originals/".substr($internal_id,0,2)."/".substr($internal_id,2,2)."/".$pathinfo['basename'];
-            fwrite($shfp,"mkdir -p ".dirname($newfile)."\n");
-            fwrite($shfp,"cp \"".$val['image_file']."\" \"".$newfile."\"\n");
-            $query = "INSERT into ".KOKEN_PREFIX."join_albums_content (album_id,content_id,`order`) values (".$parent['id'].",".$val['id'].",".$order.")";
-            fwrite($sqlfp,$query.";\n");
-            if ($val['source_id']==$parent['cover']) {
-                $query = "INSERT into ".KOKEN_PREFIX."join_albums_covers (album_id,cover_id) values (".$parent['id'].",".$val['id'].")";
-                fwrite($sqlfp,$query.";\n");
+    if (is_array($content)) {
+        foreach ($content as $val) {
+            if ($val['type']=="album") {
+                print $val['title']." (".$val['id'].")\n";
+                $title = $mysqli->real_escape_string($val['title']);
+                $slug = $mysqli->real_escape_string($val['slug']);
+                $summary = $mysqli->real_escape_string($val['description']);
+                $internal_id = md5($slug);
+                $created_at = $val['upload_date'];
+                $level = $val['level'];
+                $last=sizeof($val['items'])-1;
+                if ($val['items'][$last]['type']=="photo") $album_type = 0;
+                else $album_type = 2;
+                $query = "INSERT into ".KOKEN_PREFIX."albums (id,title,slug,summary,description,level,album_type,published_on,created_on,modified_on,internal_id,total_count) values (".$val['id'].",'".$title."','".$slug."','".$summary."','".$summary."', ".$level.", ".$album_type.",".$created_at.",".$created_at.", ".time().", '".$internal_id."',".sizeof($val['items']).")";
+                fwrite($sqlfp,utf8_decode($query).";\n");
+                $folder = ($album_type == 2) ? "sets" : "albums";
+                fwrite($mapfp,urlencode(utf8_decode($val['source']))." "."http://".KOKEN_URL."/".$folder."/".$val['slug']."\n");
+                create_sql($mysqli,$val['items'],$val);
             }
-            $order++;
+            if ($val['type']=="photo") {
+                $pathinfo = pathinfo($val['image_file']);
+                $filename = $mysqli->real_escape_string($pathinfo['basename']);
+                $caption = $mysqli->real_escape_string($val['caption']);
+                $filesize = filesize($val['image_file']);
+                $slug = $mysqli->real_escape_string($parent['slug']."-".$val['slug']);
+                $internal_id = md5($slug);
+                $capture_date = $val['capture_date'];
+                if ($capture_date == "") $capture_date = "NULL";
+    
+                print $filename."\n";
+    
+                $query = "INSERT into ".KOKEN_PREFIX."content ";
+                $query.=" (id,slug,filename,caption,visibility,filesize,width,height,aspect_ratio,published_on,uploaded_on,captured_on,modified_on,internal_id,exif,exif_make,exif_model,exif_iso,exif_camera_serial,exif_camera_lens)";
+                $query.=" values";
+                $query.=" (".$val['id'].",'".$slug."','".$filename."','".$caption."',".$val['visibility'].",".$filesize.",'".$val['width']."','".$val['height']."','".$val['aspect_ratio']."',".$val['upload_date'].",".$val['upload_date'].",".$capture_date.",".$val['upload_date'].",'".$internal_id."'";
+                $query.=($val['exif_string']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_string'])."'";
+                $query.=($val['exif_make']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_make'])."'";
+                $query.=($val['exif_model']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_model'])."'";
+                $query.=($val['exif_iso']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_iso'])."'";
+                $query.=($val['exif_camera_serial']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_camera_serial'])."'";
+                $query.=($val['exif_camera_lens']===null) ? ",NULL" : ",'".$mysqli->real_escape_string($val['exif_camera_lens'])."'";
+                $query.=")";
+                fwrite($sqlfp,utf8_decode($query).";\n");
+                $newfile = KOKEN_PATH."/storage/originals/".substr($internal_id,0,2)."/".substr($internal_id,2,2)."/".$pathinfo['basename'];
+                fwrite($shfp,"mkdir -p ".dirname($newfile)."\n");
+                fwrite($shfp,"cp \"".$val['image_file']."\" \"".$newfile."\"\n");
+                $query = "INSERT into ".KOKEN_PREFIX."join_albums_content (album_id,content_id,`order`) values (".$parent['id'].",".$val['id'].",".$order.")";
+                fwrite($sqlfp,$query.";\n");
+                if ($val['source_id']==$parent['cover']) {
+                    $query = "INSERT into ".KOKEN_PREFIX."join_albums_covers (album_id,cover_id) values (".$parent['id'].",".$val['id'].")";
+                    fwrite($sqlfp,$query.";\n");
+                }
+                $order++;
+            }
         }
     }
     return true;
