@@ -175,7 +175,7 @@ function slug($str) {
 function rebuild_tree(array $content, $left) {
     global $sqlfp;
     $right = $left + 1;
-    if (array_key_exists("items", $content)) {
+    if (array_key_exists("items", $content) && $content['items'] !== array()) {
         $last = sizeof($content['items']) - 1;
         if ($content['items'][$last]['type'] == "photo") {
             $content['items'] = array();
