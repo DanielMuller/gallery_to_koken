@@ -203,16 +203,9 @@ function create_sql(mysqli $mysqli, array $content, array $parent = NULL) {
                 print $filename . "\n";
 
                 $query = "INSERT into " . KOKEN_PREFIX . "content ";
-                $query .= " (id,slug,filename,caption,visibility,filesize,width,height,aspect_ratio,published_on,uploaded_on,captured_on,modified_on,file_modified_on,internal_id,exif,exif_make,exif_model,exif_iso,exif_camera_serial,exif_camera_lens)";
+                $query .= " (id,slug,filename,caption,visibility,filesize,width,height,aspect_ratio,published_on,uploaded_on,captured_on,modified_on,file_modified_on,internal_id)";
                 $query .= " values";
-                $query .= " (" . $val['id'] . ",'" . $slug . "','" . $filename . "','" . $caption . "'," . $val['visibility'] . "," . $filesize . ",'" . $val['width'] . "','" . $val['height'] . "','" . $val['aspect_ratio'] . "'," . $val['upload_date'] . "," . $val['upload_date'] . "," . $capture_date . "," . $val['upload_date'] . ",'" . $val['upload_date'] . ",'" . $internal_id . "'";
-                $query .= ($val['exif_string'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_string']) . "'";
-                $query .= ($val['exif_make'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_make']) . "'";
-                $query .= ($val['exif_model'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_model']) . "'";
-                $query .= ($val['exif_iso'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_iso']) . "'";
-                $query .= ($val['exif_camera_serial'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_camera_serial']) . "'";
-                $query .= ($val['exif_camera_lens'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_camera_lens']) . "'";
-                $query .= ")";
+                $query .= " (" . $val['id'] . ",'" . $slug . "','" . $filename . "','" . $caption . "'," . $val['visibility'] . "," . $filesize . ",'" . $val['width'] . "','" . $val['height'] . "','" . $val['aspect_ratio'] . "'," . $val['upload_date'] . "," . $val['upload_date'] . "," . $capture_date . "," . $val['upload_date'] . "," . $val['upload_date'] . ",'" . $internal_id . "')";
                 fwrite($sqlfp, utf8_decode($query) . ";\n");
                 $newfile = KOKEN_PATH . "/storage/originals/" . substr($internal_id, 0, 2) . "/" . substr($internal_id, 2, 2) . "/" . $pathinfo['basename'];
                 fwrite($shfp, "mkdir -p " . dirname($newfile) . "\n");
