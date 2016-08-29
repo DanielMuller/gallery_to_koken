@@ -200,9 +200,9 @@ function create_sql(mysqli $mysqli, array $content, array $parent = NULL) {
             print $filename . "\n";
 
             $query = "INSERT into " . KOKEN_PREFIX . "content ";
-            $query .= " (id,slug,filename,caption,visibility,filesize,width,height,aspect_ratio,published_on,uploaded_on,captured_on,modified_on,internal_id,exif,exif_make,exif_model,exif_iso,exif_camera_serial,exif_camera_lens)";
+            $query .= " (id,slug,filename,caption,visibility,filesize,width,height,aspect_ratio,published_on,uploaded_on,captured_on,modified_on,file_modified_on,internal_id,exif,exif_make,exif_model,exif_iso,exif_camera_serial,exif_camera_lens)";
             $query .= " values";
-            $query .= " (" . $val['id'] . ",'" . $slug . "','" . $filename . "','" . $caption . "'," . $val['visibility'] . "," . $filesize . ",'" . $val['width'] . "','" . $val['height'] . "','" . $val['aspect_ratio'] . "'," . $val['upload_date'] . "," . $val['upload_date'] . "," . $capture_date . "," . $val['upload_date'] . ",'" . $internal_id . "'";
+            $query .= " (" . $val['id'] . ",'" . $slug . "','" . $filename . "','" . $caption . "'," . $val['visibility'] . "," . $filesize . ",'" . $val['width'] . "','" . $val['height'] . "','" . $val['aspect_ratio'] . "'," . $val['upload_date'] . "," . $val['upload_date'] . "," . $capture_date . "," . $val['upload_date'] . ",'" . $val['upload_date'] . ",'" . $internal_id . "'";
             $query .= ($val['exif_string'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_string']) . "'";
             $query .= ($val['exif_make'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_make']) . "'";
             $query .= ($val['exif_model'] === NULL) ? ",NULL" : ",'" . $mysqli->real_escape_string($val['exif_model']) . "'";
