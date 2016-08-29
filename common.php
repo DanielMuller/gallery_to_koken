@@ -18,6 +18,9 @@ setlocale(LC_NUMERIC, "fr_CH");
 
 $root_album = "my_album";
 
+// for Gallery 3 switch off EXIF GPS use
+$use_exif_coordinates = FALSE;
+
 // --------------------------------
 // end of user serviceable parts ;)
 // --------------------------------

@@ -18,7 +18,7 @@ require_once(VARPATH . "database.php");
  * @return array
  */
 function get_content($parent = 0, $order_by = NULL, $captured = NULL) {
-    global $g3db, $album_id, $content_id;
+    global $g3db, $album_id, $content_id, $use_exif_coordinates;
     $items = array();
 
     $query = "select * from items where parent_id=" . $parent;
@@ -57,10 +57,13 @@ function get_content($parent = 0, $order_by = NULL, $captured = NULL) {
         } else {
             $image_file = urldecode(VARPATH . "albums/" . $row['relative_path_cache']);
             $exif = NULL;
-            @$exif = exif_read_data($image_file, 0, TRUE);
+            @$exif = exif_read_data($image_file, NULL, TRUE);
             unset($exif['EXIF']['MakerNote']);
+            unset($exif['EXIF']['UserComment']);
+            unset($exif['MAKERNOTE']);
+            unset($exif['THUMBNAIL']);
             $exif_string = $exif_make = $exif_model = $exif_iso = $exif_camera_lens = $exif_camera_serial = NULL;
-            if (!array_key_exists('GPS', $exif)) {
+            if ($use_exif_coordinates && !array_key_exists('GPS', $exif)) {
                 $query = "select latitude, longitude from exif_coordinates where item_id=" . $row['id'];
                 $gps_res = $g3db->query($query);
                 $gps_row = $gps_res->fetch_assoc();
