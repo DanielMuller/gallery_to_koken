@@ -180,8 +180,10 @@ function rebuild_tree(array $content, $left) {
         if ($content['items'][$last]['type'] == "photo") {
             $content['items'] = array();
         }
-        foreach ($content['items'] as $val) {
-            $right = rebuild_tree($val, $right);
+        if (is_array($content['items'])) {
+            foreach($content['items'] as $val) {
+                $right = rebuild_tree($val, $right);
+            }
         }
         $query = "update " . KOKEN_PREFIX . "albums set left_id=" . $left . ",right_id=" . $right . " where id='" . $content['id'] . "'";
         fwrite($sqlfp, $query . ";\n");
