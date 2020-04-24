@@ -1,5 +1,14 @@
 Gallery to Koken
 ================
+Disclaimer
+-----------------
+This repo is now archieved.
+
+I am no longer a user of [Koken](http://koken.me/) and have migrated my Gallery to [Yapawa](https://yapawa.net/), a gallery site that I developped.
+
+Thank you Koken Team for your awesome tool that allowed me to host my pictures during many years.
+
+---
 
 Simple PHP scripts to migrate from Gallery (http://galleryproject.org) to Koken (http://koken.me).
 
